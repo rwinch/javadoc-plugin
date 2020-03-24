@@ -13,6 +13,7 @@ import org.gradle.api.attributes.Category;
 import org.gradle.api.attributes.DocsType;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
@@ -29,7 +30,7 @@ public class AggregateJavadocPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(Project project) {
-		project.getPlugins().apply(JavaPlugin.class);
+		project.getPlugins().apply(JavaBasePlugin.class);
 		aggregatedDependencies(project);
 		Configuration sourcesPath = sourcesPath(project);
 		aggregatedJavadoc(project,sourcesPath);
