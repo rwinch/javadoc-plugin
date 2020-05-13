@@ -23,6 +23,7 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.ConfigurationPublications;
 import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.AttributeContainer;
@@ -47,9 +48,13 @@ public class JavadocPlugin implements Plugin<Project> {
 	}
 
 	private void withSourcesElements(Project project) {
-		project.getConfigurations().create("sourcesElements", new Action<Configuration>() {
+		ConfigurationContainer configurations = project.getConfigurations();
+		configurations.create("sourcesElements", new Action<Configuration>() {
 			@Override
 			public void execute(Configuration config) {
+				Configuration runtimeClasspath = configurations
+						.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME);
+				config.extendsFrom(runtimeClasspath);
 				config.setCanBeResolved(false);
 				config.setCanBeConsumed(true);
 				config.attributes(new Action<AttributeContainer>() {

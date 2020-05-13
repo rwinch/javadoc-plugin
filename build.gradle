@@ -27,6 +27,7 @@ plugins {
 	id 'java-gradle-plugin'
 	id 'maven-publish'
 	id "checkstyle"
+	id 'java-test-fixtures'
 	id "com.jfrog.artifactory" version '4.9.10'
 	id 'com.gradle.plugin-publish' version '0.10.1'
 	id "io.spring.nohttp" version "0.0.2.RELEASE"
@@ -66,4 +67,9 @@ dependencies {
 
 tasks.withType(Test).configureEach {
 	useJUnitPlatform()
+}
+
+components.java {
+	withVariantsFromConfiguration(configurations.testFixturesApiElements) { skip() }
+	withVariantsFromConfiguration(configurations.testFixturesRuntimeElements) { skip() }
 }

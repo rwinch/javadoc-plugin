@@ -26,6 +26,7 @@ import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.build.optional.OptionalDependenciesPlugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,11 +55,36 @@ class AggregateJavadocPluginTest {
 		assertThat(classpath.getFiles()).extracting(File::getName).contains("slf4j-api-1.7.30.jar");
 	}
 
+	@Test
+	void classpathWhenOptionalThenIncludesAggregatedModuleClasspath() {
+		Project root = rootProject();
+
+		Project module1 = projectWithPlugins("module1", root);
+		module1.getPlugins().apply(OptionalDependenciesPlugin.class);
+		Configuration optional = module1.getConfigurations()
+				.findByName(OptionalDependenciesPlugin.OPTIONAL_CONFIGURATION_NAME);
+		addDependencies(module1, optional, "io.projectreactor:reactor-core:3.3.5.RELEASE");
+
+		Project module2 = projectWithPlugins("module2", root);
+		addImplementationDependencies(module2, "org.slf4j:slf4j-api:1.7.30");
+
+		Javadoc aggregateJavadoc = (Javadoc) root.getTasks()
+				.findByName(AggregateJavadocPlugin.AGGREGATE_JAVADOC_TASK_NAME);
+
+		FileCollection classpath = aggregateJavadoc.getClasspath();
+		assertThat(classpath.getFiles()).extracting(File::getName).contains("reactor-core-3.3.5.RELEASE.jar");
+		assertThat(classpath.getFiles()).extracting(File::getName).contains("slf4j-api-1.7.30.jar");
+	}
+
 	private void addImplementationDependencies(Project project, String... dependencies) {
 		Configuration implementation = project.getConfigurations()
 				.getByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME);
+		addDependencies(project, implementation, dependencies);
+	}
+
+	private void addDependencies(Project project, Configuration configuration, String... dependencies) {
 		for (String dependency : dependencies) {
-			implementation.getDependencies().add(project.getDependencies().create(dependency));
+			configuration.getDependencies().add(project.getDependencies().create(dependency));
 		}
 	}
 
